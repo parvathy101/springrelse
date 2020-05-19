@@ -5,17 +5,21 @@ public class DeviceFilters {
 	private String deviceId;
 	private String firmwareVersion;
 	private String modelNo;
+	private String deviceNumber;
 		
 	public DeviceFilters() {
 		super();
 	}
 
 
-	public DeviceFilters(String deviceId, String version, String model) {
+
+
+	public DeviceFilters(String deviceId, String firmwareVersion, String modelNo, String deviceNumber) {
 		super();
 		this.deviceId = deviceId;
-		this.firmwareVersion = version;
-		this.modelNo = model;
+		this.firmwareVersion = firmwareVersion;
+		this.modelNo = modelNo;
+		this.deviceNumber = deviceNumber;
 	}
 
 
@@ -48,6 +52,22 @@ public class DeviceFilters {
 		this.modelNo = modelNo;
 	}
 
+
+
+
+	public String getDeviceNumber() {
+		return deviceNumber;
+	}
+
+
+
+
+	public void setDeviceNumber(String deviceNumber) {
+		this.deviceNumber = deviceNumber;
+	}
+
+	
+	
 
 	
 	

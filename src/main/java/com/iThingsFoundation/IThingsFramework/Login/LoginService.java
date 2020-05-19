@@ -37,6 +37,7 @@ public class LoginService {
 		
 		 Login login =new Login();
 		 Message msg=new Message();
+		 String uid=null;
 		/* add this at the time of using encrypted passwrd
 		 BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		String sqlpasswrd = "SELECT password FROM Login WHERE UserName=?";
@@ -49,7 +50,7 @@ public class LoginService {
           
           if(isPasswordMatch)
           {*/
-         String sql = "SELECT  UserName,RoleId,UserId,CustomerUUId,TenantId,PatientId from Login1  where UserName=? and Password=?"; 
+         String sql = "SELECT  UserName,RoleId from Login  where UserName=? and Password=?"; 
 
 		try
 		{
@@ -77,22 +78,8 @@ public class LoginService {
 		
 				login.setUserName((String)row.get("UserName"));
 				login.setRoleId((int)row.get("RoleId"));
-				if((int)row.get("RoleId")==1)
-				{
-					login.setUuid(row.get("TenantId"));
-				}
-				if((int)row.get("RoleId")==3)
-				{
-					login.setUuid(row.get("CustomerUUId"));
-				}
-				if((int)row.get("RoleId")==6||(int)row.get("RoleId")==5)
-				{
-					login.setUuid(row.get("UserId"));
-				}
-				if((int)row.get("RoleId")==8)
-				{
-					login.setUuid(row.get("PatientId"));
-				}
+				 uid=getUId(loginDetails.getUserName(),(int)row.get("RoleId"));
+			     login.setUuid(uid); 
 				login.setStatus("Success");
 				msg.setSuccessMessage("Successfully logged in");
 				login.setMessage(msg);
@@ -136,7 +123,7 @@ public class LoginService {
 		
 		
 		Message msg=new Message();
-		
+		String uid=null;
 		String mailId=getMailId(details.getUuid(),details.getRoleId());
 		if(mailId!=null)
 		{
@@ -150,27 +137,21 @@ public class LoginService {
 			{
 			for (Map<String, Object> row : rows) 
 	        {
-			   if((int)row.get("RoleId")==1)
-			   {
-				getLoginDetails.setUuid((String)row.get("TenantId"));  
-			   }
-			   else if((int)row.get("RoleId")==3)
-			   {
-				   getLoginDetails.setUuid((String)row.get("CustomerUUId")); 
-			   }
-			   else if((int)row.get("RoleId")==5||(int)row.get("RoleId")==6)
-			   {
-				   getLoginDetails.setUuid((String)row.get("UserId"));
-			   }
+				uid=getUId(mailId,(int)row.get("RoleId"));
+				getLoginDetails.setUuid(uid); 
 			  
-				getLoginDetails.setFirstName((String)row.get("Name"));
+				getLoginDetails.setFirstName((String)row.get("FirstName"));
+				getLoginDetails.setLastName((String)row.get("LastName"));
 				getLoginDetails.setPhone((String)row.get("Phone"));
+				getLoginDetails.setEmail((String)row.get("Email"));
+			
 				Address address=new Address();
-				  address.setStreet((String)row.get("Street"));
-				  address.setStreetAdditional((String)row.get("Street2"));
-				  address.setPostalcode((String)row.get("PostalCode"));
-				  address.setCity((String)row.get("City"));
-				  address.setCountry((String)row.get("Country"));
+				address=getUuidAddress(uid);
+				 // address.setStreet((String)row.get("Street"));
+				 // address.setStreetAdditional((String)row.get("StreetAdditional"));
+				 // address.setPostalcode((String)row.get("PostalCode"));
+				 // address.setCity((String)row.get("City"));
+				//  address.setCountry((String)row.get("Country"));
 				getLoginDetails.setAddress(address);
 				msg.setSuccessMessage("Successfully Found details");
 				getLoginDetails.setMessage(msg);
@@ -217,7 +198,18 @@ public class LoginService {
 		String generatedString  = passwordEncoder.encode(login.getPassword());
 		System.out.println(randompassword+"----aaaaa---"+generatedString);
 	    */
-		String loginsql="Update Login1 set Password=? where UserName=?";
+		
+         String sql = "SELECT * from Login  where UserName=?"; 
+		
+	
+			
+			List<Map<String, Object>> rows =  jdbcTemplate.queryForList(sql, login.getUserName());
+			
+			if(rows.size()>0)
+			{
+		
+		
+		String loginsql="Update Login set Password=? where UserName=?";
 		int updatepassword=jdbcTemplate.update(loginsql,login.getPassword(),login.getUserName());
 		if(updatepassword>0)
 		{
@@ -226,6 +218,11 @@ public class LoginService {
 		else {
 			msg.setErrorMessage("Password Reset Failed");
 		}
+			}
+			else {
+				msg.setErrorMessage("Username not found");
+			}
+		
 		return msg;
 	}
 	
@@ -234,27 +231,11 @@ public class LoginService {
 		String sql = null;
 		String mailid=null;
 
-		if(roleId==1)
-		{
-			sql="Select UserName from Login1 where TenantId=? and RoleId=1";
-		}
-		if(roleId==3)
-		{
-			
-			sql="Select UserName from Login1 where CustomerUUId=? and RoleId=3";
-		}
-		if(roleId==6||roleId==5)
-		{
-			
-			sql="Select UserName from Login1 where UserId=? and RoleId in(5,6)";
-			
-		}
-		if(roleId==8)
-		{
-			sql="Select UserName from Login1 where PatientId=? and RoleId=8";
-		}
+		
+			sql="Select UserName from Login where UUID=? and RoleId=?";
+		
 	   // mailid = (String) jdbcTemplate.queryForObject(sql, new Object[] { uid }, String.class);
-		List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql,uid);
+		List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql,uid,roleId);
 		
 		if(rows.size()>0)
 		{
@@ -269,5 +250,72 @@ public class LoginService {
         }
 	    return mailid;
 	}
+	
+	
+	public String getUId(String email,int roleId)
+	{
+		String sql = null;
+		String uid=null;
+
+		if(roleId==1)
+		{
+			sql="Select RootId as UId from Profile where Email=? and RoleId=1";
+		}
+		if(roleId==2||roleId==3)
+		{
+			
+			sql="Select TenantId as UId from Profile where Email=? and RoleId in(2,3)";
+		}
+		if(roleId==4||roleId==5)
+		{
+			
+			sql="Select CompanyId as UId from Profile where Email=? and RoleId in(4,5)";
+			
+		}
+		if(roleId==6||roleId==7)
+		{
+			
+			sql="Select PhysicianId as UId from Profile where Email=? and RoleId in(6,7)";
+			
+		}
+		if(roleId==8)
+		{
+			sql="Select PatientId as UId from Profile where Email=? and RoleId=8";
+		}
+	   // mailid = (String) jdbcTemplate.queryForObject(sql, new Object[] { uid }, String.class);
+		List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql,email);
+		
+		if(rows.size()>0)
+		{
+		for (Map<String, Object> row : rows) 
+        {
+			uid=(String)row.get("UId");
+        }
+		}
+		else
+		{
+			uid=null;
+        }
+	    return uid;
+	}
+	
+	public Address getUuidAddress(String Id)
+	{
+		  Address address=new Address();
+		  List<Map<String, Object>> rows = jdbcTemplate.queryForList("Select * from Address where UUID='"+Id+"'");
+		   
+			//String count=jdbcTemplate.queryForObject("select * from Customer");
+			 for (Map<String, Object> row : rows) 
+		        {
+		  address.setStreet((String)row.get("Street"));
+		  address.setStreetAdditional((String)row.get("StreetAdditional"));
+		  address.setPostalcode((String)row.get("PostalCode"));
+		  address.setState((String)row.get("State"));
+		  address.setCity((String)row.get("City"));
+		  address.setCountry((String)row.get("Country"));
+		        }
+			 return address;
+	}
+
 
 }

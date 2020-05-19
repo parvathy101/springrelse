@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.iThingsFoundation.IThingsFramework.Company.Company;
+import com.iThingsFoundation.IThingsFramework.Company.CompanyList;
 import com.iThingsFoundation.IThingsFramework.common.Message;
 import com.iThingsFoundation.IThingsFramework.common.SessionService;
 
@@ -28,7 +32,27 @@ public class TenantController {
 	@Autowired
 	private SessionService sessionService;
 	
+	@PostMapping("/gettenantdetails")
+	public TenantList getCompanyDetails(@RequestBody Tenant tenant,HttpServletRequest request) throws JsonMappingException, JsonProcessingException 
+	{
+        String sessionid=request.getHeader("Authorization");
+		
+	    String sessionstatus=sessionService.SessionData(sessionid);
+	    TenantList list=new TenantList();
+		
+	    if(sessionstatus!="Session Expired")
+	      {
+     
+		return tenantService.getTenantDetails(tenant.getBatchsize(),tenant.getOffset(),tenant);
 	
+	      
+	      }   
+	    else
+	    {
+	    	list.setStatus("Session Expired");
+	    	return list;
+	    }
+	}
 	
 @PostMapping("/registertenant")
 public Tenant registerTenant(@RequestBody Tenant registerDetails, HttpServletRequest request) {

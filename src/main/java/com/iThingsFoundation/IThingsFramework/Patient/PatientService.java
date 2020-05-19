@@ -40,8 +40,9 @@ public class PatientService {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 		String tenantId=null;
-		String customerId=null;
+		String companyId=null;
 		String physicianId=null;
+		String rootId=null;
 		String lastpart=null;
        String exist=null;
 		
@@ -50,40 +51,42 @@ public class PatientService {
 		{
 			 exist=getPhysicianExist(patien.getPhysicianId().toString());
 		}
-		else if(patien.getCustomerId()!=null)
+		else if(patien.getCompanyId()!=null)
 		{
-			exist=getCustomerExist(patien.getCustomerId().toString());
+			exist=getCustomerExist(patien.getCompanyId().toString());
 		}
 		if(exist=="yes")
 		{
 		
-		if(patien.getCustomerId()!=null)
+		if(patien.getCompanyId()!=null)
 		{
-			tenantId=getCustomerTenantId(patien.getCustomerId().toString());
-			customerId=patien.getCustomerId().toString();
+			tenantId=getCompanyTenantId(patien.getCompanyId().toString());
+			rootId=getTenantRootId(tenantId);
+			companyId=patien.getCompanyId().toString();
 			physicianId=null;
-			lastpart="Status='active' and TenantId='"+tenantId+"' and CustomerUUId='"+customerId+"' order by Id asc ) t limit "+offset+","+batchsize+"";
+			lastpart="Status='active' and TenantId='"+tenantId+"' and CompanyId='"+companyId+"'and RoleId=8 order by ProfileId asc ) t limit "+offset+","+batchsize+"";
 		}
 		else if(patien.getPhysicianId()!=null)		
 		{
 			tenantId=getPhysicianTenantId(patien.getPhysicianId().toString());
-			customerId=getPhysicianCustomerId(patien.getPhysicianId().toString());
+			rootId=getTenantRootId(tenantId);
+			companyId=getPhysicianCompanyId(patien.getPhysicianId().toString());
 			physicianId=patien.getPhysicianId().toString();
-			lastpart="Status='active' and TenantId='"+tenantId+"' and CustomerUUId='"+customerId+"' and UserId='"+physicianId+"' order by Id asc ) t limit "+offset+","+batchsize+"";
+			lastpart="Status='active' and TenantId='"+tenantId+"' and CompanyId='"+companyId+"' and PhysicianId='"+physicianId+"'and RoleId=8 order by ProfileId asc ) t limit "+offset+","+batchsize+"";
 			
 		}
 		
-		String sql="select t.* from (select @rownum:=@rownum+1 rownumber, t.* from Patient t cross join (SELECT @rownum:=0) r where ";
+		String sql="select t.* from (select @rownum:=@rownum+1 rownumber, t.* from Profile t cross join (SELECT @rownum:=0) r where ";
 		
 		
-		String sql2="SELECT count(Id) FROM Patient where ";
+		String sql2="SELECT count(ProfileId) FROM Profile where ";
 		 if(patien.getFilter()!=null)
 		 {
 			 //String sql3;
 			      if(patien.getFilter().getFirstName()!=null)
 			      {
-			    	  sql+= "Name like '"+patien.getFilter().getFirstName()+"%' and "; 
-			    	  sql2+= "Name like '"+patien.getFilter().getFirstName()+"%' and ";
+			    	  sql+= "FirstName like '"+patien.getFilter().getFirstName()+"%' and "; 
+			    	  sql2+= "FirstName like '"+patien.getFilter().getFirstName()+"%' and ";
 			      }
 			      if(patien.getFilter().getEmail()!=null)
 			      {
@@ -103,8 +106,8 @@ public class PatientService {
 			      }
 			      if(patien.getFilter().getDob()!=null)
 			      {
-			    	  sql+= "DOB like '"+patien.getFilter().getDob()+"%' and "; 
-			    	  sql2+= "DOB like '"+patien.getFilter().getDob()+"%' and "; 
+			    	  sql+= "Dob like '"+patien.getFilter().getDob()+"%' and "; 
+			    	  sql2+= "Dob like '"+patien.getFilter().getDob()+"%' and "; 
 			      }
 			     
 			      
@@ -127,16 +130,20 @@ public class PatientService {
 	        {
 			 Patient patient=new Patient();
 			 patient.setPatientuuid(row.get("PatientId"));
-			 patient.setFirstName((String)row.get("Name"));
+			 String pId=(String)row.get("PatientId");
+			 patient.setFirstName((String)row.get("FirstName"));
+			 patient.setLastName((String)row.get("LastName"));
 			 patient.setEmail((String)row.get("Email"));
 			 String dob=dateFormat.format(row.get("DOB")).toString();
 			 patient.setDob(dob);
 			 Address address=new Address();
-			  address.setStreet((String)row.get("Street"));
-			  address.setStreetAdditional((String)row.get("Street2"));
-			  address.setPostalcode((String)row.get("PostalCode"));
-			  address.setCity((String)row.get("City"));
-			  address.setCountry((String)row.get("Country"));
+			 address=getPatientAddress(pId);
+			 // address.setStreet((String)row.get("Street"));
+			 // address.setStreetAdditional((String)row.get("StreetAdditional"));
+			 // address.setPostalcode((String)row.get("PostalCode"));
+			 // address.setCity((String)row.get("City"));
+			 // address.setState((String)row.get("State"));
+			 // address.setCountry((String)row.get("Country"));
 			  patient.setAddress(address);
 			 patient.setGender((String)row.get("Gender"));
 			  double val=(double)row.get("rownumber");
@@ -144,25 +151,25 @@ public class PatientService {
 			   lastRowno=Integer.toString(rowno);
 			   
 			   
-			   id=(int) row.get("Id");
+			   id=(int) row.get("ProfileId");
 			      
 			   patients.add(patient);
 	        }
 		 
 		     String sqlnew = null;
-		     if(patien.getCustomerId()!=null)
+		     if(patien.getCompanyId()!=null)
 				{
-					tenantId=getCustomerTenantId(patien.getCustomerId().toString());
-					customerId=patien.getCustomerId().toString();
+					tenantId=getCompanyTenantId(patien.getCompanyId().toString());
+					companyId=patien.getCompanyId().toString();
 					physicianId=null;
-					sqlnew = sql2+" Id>"+id+" and CustomerUUId='"+customerId+"' and TenantId='"+tenantId+"' ";
+					sqlnew = sql2+" ProfileId>"+id+" and CompanyId='"+companyId+"' and TenantId='"+tenantId+"'and RoleId=8 and Status='active' ";
 				}
 				else if(patien.getPhysicianId()!=null)		
 				{
 					tenantId=getPhysicianTenantId(patien.getPhysicianId().toString());
-					customerId=getPhysicianCustomerId(patien.getPhysicianId().toString());
+					companyId=getPhysicianCompanyId(patien.getPhysicianId().toString());
 					physicianId=patien.getPhysicianId().toString();
-					sqlnew = sql2+" Id>"+id+" and CustomerUUId='"+customerId+"' and TenantId='"+tenantId+"' and UserId='"+physicianId+"'";
+					sqlnew = sql2+" ProfileId>"+id+" and CompanyId='"+companyId+"' and TenantId='"+tenantId+"' and PhysicianId='"+physicianId+"' and RoleId=8 and Status='active'";
 					
 				}
 		     remainingRecords = (String) jdbcTemplate.queryForObject(sqlnew, String.class);
@@ -187,17 +194,25 @@ public class PatientService {
 		Patient registerPatient=new Patient();
 		Message msg=new Message();
 		Address addr=new Address();
+		
 		String tenantId = null;
-		String customerId=null;
-		if(patient.getCustomerId()!=null)
+		String companyId=null;
+		String rootId=null;
+		String physicianId=null;
+		
+		if(patient.getCompanyId()!=null)
 		{
-			tenantId=getCustomerTenantId(patient.getCustomerId().toString());
-			customerId=patient.getCustomerId().toString();
+			tenantId=getCompanyTenantId(patient.getCompanyId().toString());
+			rootId=getTenantRootId(tenantId);
+			companyId=patient.getCompanyId().toString();
 		}
 		else if(patient.getPhysicianId()!=null)		
 		{
+			
+			companyId=getPhysicianCompanyId(patient.getPhysicianId().toString());
 			tenantId=getPhysicianTenantId(patient.getPhysicianId().toString());
-			customerId=getPhysicianCustomerId(patient.getPhysicianId().toString());
+			rootId=getTenantRootId(tenantId);
+			physicianId=patient.getPhysicianId().toString();
 			
 		}
 		String sql="select * from Profile where Email=?";
@@ -222,17 +237,24 @@ public class PatientService {
 				System.out.println(randompassword+"----aaaaa---"+generatedString);
 			    */
 		
-			String profilesql="Insert into Profile(PatientId,CustomerUUId,UserId,TenantId,RoleId,Name,Email,Phone,Created_On,Street,Street2,PostalCode,City,Country) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-			int insertprofile=jdbcTemplate.update(profilesql,uuid.toString(),customerId,patient.getPhysicianId(),tenantId,8,patient.getFirstName(),patient.getEmail(),patient.getPhone(),timestamp.getTime(),patient.getAddress().getStreet(),patient.getAddress().getStreetAdditional(),patient.getAddress().getPostalcode(),patient.getAddress().getCity(),patient.getAddress().getCountry());
-			
-			String patientsql="Insert into Patient(PatientId,CustomerUUId,UserId,TenantId,Name,Email,Password,Status,Created_On,Gender,DOB,Street,Street2,PostalCode,City,Country) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-			int insertpatient=jdbcTemplate.update(patientsql,uuid.toString(),customerId,patient.getPhysicianId(),tenantId,patient.getFirstName(),patient.getEmail(),randompassword,"active",timestamp.getTime(),patient.getGender(),patient.getDob(),patient.getAddress().getStreet(),patient.getAddress().getStreetAdditional(),patient.getAddress().getPostalcode(),patient.getAddress().getCity(),patient.getAddress().getCountry());
 			
 			
-			String loginsql="Insert into Login1(PatientId,CustomerUUId,UserId,TenantId,UserName,Password,RoleId) values (?,?,?,?,?,?,?)";
-			int insertlogin=jdbcTemplate.update(loginsql,uuid.toString(),customerId,patient.getPhysicianId(),tenantId,patient.getEmail(),randompassword,8);
+			String profilesql="Insert into Profile(RootId,PatientId,PhysicianId,CompanyId,TenantId,RoleId,FirstName,LastName,Email,Phone,Gender,Dob,Created_On,Street,StreetAdditional,PostalCode,City,State,Country,Status) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			int insertprofile=jdbcTemplate.update(profilesql,rootId,uuid.toString(),physicianId,companyId,tenantId,8,patient.getFirstName(),patient.getLastName(),patient.getEmail(),patient.getPhone(),patient.getGender(),patient.getDob(),timestamp.getTime(),patient.getAddress().getStreet(),patient.getAddress().getStreetAdditional(),patient.getAddress().getPostalcode(),patient.getAddress().getCity(),patient.getAddress().getState(),patient.getAddress().getCountry(),"active");
 			
-			if(insertprofile>0&&insertpatient>0&&insertlogin>0)
+						
+						
+			String patientsql="Insert into Patient(PatientId,PhysicianId,CompanyId,TenantId,RootId,Status,Created_On) values (?,?,?,?,?,?,?)";
+			int insertpatient=jdbcTemplate.update(patientsql,uuid.toString(),physicianId,companyId,tenantId,rootId,"active",timestamp.getTime());
+			
+			
+			String loginsql="Insert into Login(UserName,Password,UUID,RoleId) values (?,?,?,?)";
+			int insertlogin=jdbcTemplate.update(loginsql,patient.getEmail(),randompassword,uuid.toString(),8);
+			
+			String addresssql="Insert into Address(UUID,RoleId,Street,StreetAdditional,PostalCode,City,State,Country) values(?,?,?,?,?,?,?,?)";
+			int insertaddress=jdbcTemplate.update(addresssql,uuid.toString(),8,patient.getAddress().getStreet(),patient.getAddress().getStreetAdditional(),patient.getAddress().getPostalcode(),patient.getAddress().getCity(),patient.getAddress().getState(),patient.getAddress().getCountry());
+			
+			if(insertprofile>0&&insertpatient>0&&insertlogin>0&&insertaddress>0)
 			{
 				msg.setSuccessMessage("Registered Successfully ");
 				registerPatient.setMessage(msg);
@@ -254,12 +276,34 @@ public class PatientService {
 		Message msg=new Message();
 		Address addr=new Address();
 		
-		String profilesql="Update Profile set Name=?,Phone=?,Modified_On=?,Street=?,Street2=?,PostalCode=?,City=?,Country=? where PatientId=?";
-		int updateProfile=jdbcTemplate.update(profilesql,patient.getFirstName(),patient.getPhone(),timestamp.getTime(),patient.getAddress().getStreet(),patient.getAddress().getStreetAdditional(),patient.getAddress().getPostalcode(),patient.getAddress().getCity(),patient.getAddress().getCountry(),patient.getPatientuuid());
+		String physicianId=getPatientPhysicianId(patient.getPatientuuid().toString());
+		String companyId=getPatientCompanyId(patient.getPatientuuid().toString());
+		String tenantId=getPatientTenantId(patient.getPatientuuid().toString());
+		String rootId=getTenantRootId(tenantId);
+		String profilesql=null;
 		
-		String patientsql="Update Patient set Name=?,Gender=?,DOB=?,Modified_On=?,Street=?,Street2=?,PostalCode=?,City=?,Country=? where PatientId=?";
-		int updatepatient=jdbcTemplate.update(patientsql,patient.getFirstName(),patient.getGender(),patient.getDob(),timestamp.getTime(),patient.getAddress().getStreet(),patient.getAddress().getStreetAdditional(),patient.getAddress().getPostalcode(),patient.getAddress().getCity(),patient.getAddress().getCountry(),patient.getPatientuuid());
-		if(updateProfile>0&&updatepatient>0)
+		if(physicianId==null)
+		{
+			profilesql="Update Profile set FirstName=?,LastName=?,Phone=?,Gender=?,Dob=?,Street=?,StreetAdditional=?,PostalCode=?,City=?,State=?,Country=?,Modified_On=? where TenantId=? and RootId=? and CompanyId=? and PhysicianId is null and patientId=? ";
+	     
+		}
+		else
+		{
+			profilesql="Update Profile set FirstName=?,LastName=?,Phone=?,Gender=?,Dob=?,Street=?,StreetAdditional=?,PostalCode=?,City=?,State=?,Country=?,Modified_On=? where TenantId=? and RootId=? and CompanyId=? and PhysicianId='"+physicianId+"' and patientId=? ";
+		     
+		}
+		
+		
+		int updateProfile=jdbcTemplate.update(profilesql,patient.getFirstName(),patient.getLastName(),patient.getPhone(),patient.getGender(),patient.getDob(),patient.getAddress().getStreet(),patient.getAddress().getStreetAdditional(),patient.getAddress().getPostalcode(),patient.getAddress().getCity(),patient.getAddress().getState(),patient.getAddress().getCountry(),timestamp.getTime(),tenantId,rootId,companyId,patient.getPatientuuid());
+		
+		String patientsql="Update Patient set Modified_On=? where PatientId=?";
+		int updatepatient=jdbcTemplate.update(patientsql,timestamp.getTime(),patient.getPatientuuid());
+		
+		 String addresssql="Update Address set Street=?,StreetAdditional=?,PostalCode=?,City=?,State=?,Country=? where UUID=?";
+		 int updateaddress=jdbcTemplate.update(addresssql,patient.getAddress().getStreet(),patient.getAddress().getStreetAdditional(),patient.getAddress().getPostalcode(),patient.getAddress().getCity(),patient.getAddress().getState(),patient.getAddress().getCountry(),patient.getPatientuuid());
+		 
+		
+		if(updateProfile>0&&updatepatient>0&&updateaddress>0)
 		{
 			msg.setSuccessMessage("Update Details Successfully");
 		}
@@ -272,12 +316,32 @@ public class PatientService {
 	public Message deleteById(Patient patient)
 	{
 		Message msg=new Message();
+		int deleteProfile=0;
+		String physicianId=getPatientPhysicianId(patient.getPatientuuid().toString());
+		String companyId=getPatientCompanyId(patient.getPatientuuid().toString());
+		String tenantId=getPatientTenantId(patient.getPatientuuid().toString());
+		String rootId=getTenantRootId(tenantId);
 		
-		String loginsql="Delete FROM Login1 WHERE PatientId=?";
+		if(physicianId==null)
+		{
+			deleteProfile=jdbcTemplate.update("Update Profile set Status='inactive' where TenantId=? and RootId=? and CompanyId=? and PhysicianId is null and patientId=? ",tenantId,rootId,companyId,patient.getPatientuuid());
+	     
+		}
+		else
+		{
+			deleteProfile=jdbcTemplate.update("Update Profile set Status='inactive' where TenantId=? and RootId=? and CompanyId=? and PhysicianId=? and patientId=? ",tenantId,rootId,companyId,physicianId,patient.getPatientuuid());
+		     
+		}
+		
+		
+		
+		String loginsql="Delete FROM Login WHERE UUID=?";
 		int deleteLogin=jdbcTemplate.update(loginsql,patient.getPatientuuid());
 		
 		String patientsql="Update Patient set Status='inactive' where PatientId=?";
 		int deletepatient=jdbcTemplate.update(patientsql,patient.getPatientuuid());
+		
+		
 		if(deletepatient>0)
 		{
 			msg.setSuccessMessage("Delete Details Successfully");
@@ -288,10 +352,10 @@ public class PatientService {
 		return msg;
 	}
 	
-	public String getCustomerTenantId(String id)
+	public String getCompanyTenantId(String id)
 	{
 		
-		String sql = "SELECT TenantId FROM Customer WHERE CustomerUUId=? ";
+		String sql = "SELECT TenantId FROM Company WHERE CompanyId=? ";
 
 	    String uid = (String) jdbcTemplate.queryForObject(
 	            sql, new Object[] { id }, String.class);
@@ -303,7 +367,7 @@ public class PatientService {
 	public String getPhysicianTenantId(String id)
 	{
 		
-		String sql = "SELECT TenantId FROM User WHERE UserId=? ";
+		String sql = "SELECT TenantId FROM Physician WHERE PhysicianId=? ";
 
 	    String uid = (String) jdbcTemplate.queryForObject(
 	            sql, new Object[] { id }, String.class);
@@ -311,10 +375,10 @@ public class PatientService {
 	    return uid;
 		
 	}
-	public String getPhysicianCustomerId(String id)
+	public String getPhysicianCompanyId(String id)
 	{
 		
-		String sql = "SELECT CustomerUUId FROM User WHERE UserId=? ";
+		String sql = "SELECT CompanyId FROM Physician WHERE PhysicianId=? ";
 
 	    String uid = (String) jdbcTemplate.queryForObject(
 	            sql, new Object[] { id }, String.class);
@@ -326,7 +390,7 @@ public class PatientService {
 	public String getCustomerExist(String id)
 	{
 		
-		String sql = "SELECT * FROM Patient WHERE CustomerUUId=? and Status='active' ";
+		String sql = "SELECT * FROM Patient WHERE CompanyId=? and Status='active' ";
         String exist=null;
        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql,id);
 		
@@ -346,7 +410,7 @@ public class PatientService {
 	public String getPhysicianExist(String id)
 	{
 		
-		String sql = "SELECT * FROM Patient WHERE UserId=? and Status='active' ";
+		String sql = "SELECT * FROM Patient WHERE PhysicianId=? and Status='active' ";
         String exist=null;
        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql,id);
 		
@@ -362,6 +426,70 @@ public class PatientService {
 	    return exist;
 		
 	}
+	public String getTenantRootId(String id)
+	{
+		
+		String sql = "SELECT RootId FROM Tenant WHERE TenantId=? ";
+
+	    String uid = (String) jdbcTemplate.queryForObject(
+	            sql, new Object[] { id }, String.class);
+
+	    return uid;
+		
+	}
 	
+	public String getPatientCompanyId(String id)
+	{
+		
+		String sql = "SELECT CompanyId FROM Patient WHERE PatientId=? ";
+
+	    String uid = (String) jdbcTemplate.queryForObject(
+	            sql, new Object[] { id }, String.class);
+
+	    return uid;
+		
+	}
+	
+	public String getPatientPhysicianId(String id)
+	{
+		
+		String sql = "SELECT PhysicianId FROM Patient WHERE PatientId=? ";
+
+	    String uid = (String) jdbcTemplate.queryForObject(
+	            sql, new Object[] { id }, String.class);
+
+	    return uid;
+		
+	}
+	
+	public String getPatientTenantId(String id)
+	{
+		
+		String sql = "SELECT TenantId FROM Patient WHERE PatientId=? ";
+
+	    String uid = (String) jdbcTemplate.queryForObject(
+	            sql, new Object[] { id }, String.class);
+
+	    return uid;
+		
+	}
+	
+	public Address getPatientAddress(String Id)
+	{
+		  Address address=new Address();
+		  List<Map<String, Object>> rows = jdbcTemplate.queryForList("Select * from Address where UUID='"+Id+"'");
+		   
+			//String count=jdbcTemplate.queryForObject("select * from Customer");
+			 for (Map<String, Object> row : rows) 
+		        {
+		  address.setStreet((String)row.get("Street"));
+		  address.setStreetAdditional((String)row.get("StreetAdditional"));
+		  address.setPostalcode((String)row.get("PostalCode"));
+		  address.setState((String)row.get("State"));
+		  address.setCity((String)row.get("City"));
+		  address.setCountry((String)row.get("Country"));
+		        }
+			 return address;
+	}
 
 }

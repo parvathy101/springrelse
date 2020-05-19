@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.iThingsFoundation.IThingsFramework.Customer.Customer;
+import com.iThingsFoundation.IThingsFramework.Company.Company;
 import com.iThingsFoundation.IThingsFramework.common.Message;
 import com.iThingsFoundation.IThingsFramework.common.SessionService;
 

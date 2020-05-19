@@ -5,6 +5,7 @@ public class Address {
 	private String streetAdditional;
 	private String postalcode;
 	private String city;
+	private String state;
 	private String country;
 	
 	
@@ -14,12 +15,13 @@ public class Address {
 	}
 
 
-	public Address(String street, String streetAdditional, String postalcode, String city, String country) {
+	public Address(String street, String streetAdditional, String postalcode, String city, String state, String country) {
 		super();
 		this.street = street;
 		this.streetAdditional = streetAdditional;
 		this.postalcode = postalcode;
 		this.city = city;
+		this.state = state;
 		this.country = country;
 	}
 	
@@ -53,6 +55,16 @@ public class Address {
 	}
 	public void setCountry(String country) {
 		this.country = country;
+	}
+
+
+	public String getState() {
+		return state;
+	}
+
+
+	public void setState(String state) {
+		this.state = state;
 	}
 	
 	

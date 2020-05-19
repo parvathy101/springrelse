@@ -8,7 +8,7 @@ import com.iThingsFoundation.IThingsFramework.common.Message;
 public class Patient {
 	
 	private Object patientuuid;
-	private Object customerId;
+	private Object companyId;
 	private Object physicianId;
 	private String firstName;
 	private String lastName;
@@ -31,12 +31,12 @@ public class Patient {
 
 
 
-	public Patient(Object patientuuid, Object customerId, Object physicianId, String firstName, String lastName,
+	public Patient(Object patientuuid, Object ccompanyId, Object physicianId, String firstName, String lastName,
 			String phone, String email, String roleId, String gender, String dob, Address address, Message message,
 			String batchsize, String offset, Filters filter) {
 		super();
 		this.patientuuid = patientuuid;
-		this.customerId = customerId;
+		this.companyId = companyId;
 		this.physicianId = physicianId;
 		this.firstName = firstName;
 		this.lastName = lastName;
@@ -66,14 +66,14 @@ public class Patient {
 
 
 
-	public Object getCustomerId() {
-		return customerId;
+	public Object getCompanyId() {
+		return companyId;
 	}
 
 
 
-	public void setCustomerId(Object customerId) {
-		this.customerId = customerId;
+	public void setCompanyId(Object companyId) {
+		this.companyId = companyId;
 	}
 
 

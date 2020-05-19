@@ -5,12 +5,14 @@ package com.iThingsFoundation.IThingsFramework.Tenant;
 import java.util.UUID;
 
 import com.iThingsFoundation.IThingsFramework.common.Address;
+import com.iThingsFoundation.IThingsFramework.common.Filters;
 import com.iThingsFoundation.IThingsFramework.common.Message;
 
 public class Tenant {
 	
 	
 	private Object uuid;
+	private Object rootId;
 	private String firstName;
 	private String lastName;
 	private String phone;
@@ -21,16 +23,23 @@ public class Tenant {
 	private Address address;
 	private String status;
 	private Message message;
+	private String batchsize;
+	private String offset;
+	private Filters filter;
 	
 	public Tenant() {
 		super();
 	}
 
-	public Tenant(Object uid, String firstName, String lastName, String phone, String email, String roleId,
-			String gender, String dob, Address address, String status, Message message) {
+	
+
+
+	public Tenant(Object uuid, Object rootId, String firstName, String lastName, String phone, String email,
+			String roleId, String gender, String dob, Address address, String status, Message message, String batchsize,
+			String offset, Filters filter) {
 		super();
-		this.uuid = uid;
-		
+		this.uuid = uuid;
+		this.rootId = rootId;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.phone = phone;
@@ -41,9 +50,30 @@ public class Tenant {
 		this.address = address;
 		this.status = status;
 		this.message = message;
+		this.batchsize = batchsize;
+		this.offset = offset;
+		this.filter = filter;
 	}
 
-	
+
+
+
+
+	public Object getRootId() {
+		return rootId;
+	}
+
+
+
+
+
+	public void setRootId(Object rootId) {
+		this.rootId = rootId;
+	}
+
+
+
+
 
 	public Object getUuid() {
 		return uuid;
@@ -133,6 +163,48 @@ public class Tenant {
 
 	public void setMessage(Message message) {
 		this.message = message;
+	}
+
+
+
+
+	public String getBatchsize() {
+		return batchsize;
+	}
+
+
+
+
+	public void setBatchsize(String batchsize) {
+		this.batchsize = batchsize;
+	}
+
+
+
+
+	public String getOffset() {
+		return offset;
+	}
+
+
+
+
+	public void setOffset(String offset) {
+		this.offset = offset;
+	}
+
+
+
+
+	public Filters getFilter() {
+		return filter;
+	}
+
+
+
+
+	public void setFilter(Filters filter) {
+		this.filter = filter;
 	}
 	
 	

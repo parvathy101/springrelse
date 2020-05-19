@@ -35,9 +35,10 @@ public class UploadFileService {
 		//System.out.printf("Text--"+menuText);
 		String dbname = jdbcTemplate.getDataSource().getConnection().getCatalog();
 		String tenantId=null;
-		String customerId=null;
+		String companyId=null;
 		String physicianId=null;
 		String patientId=null;
+		String rootId=null;
 	      System.out.println(uuid+"---"+roleId);
 		  byte[] bytes;
 		  
@@ -45,29 +46,38 @@ public class UploadFileService {
 		    Path path = Paths.get("../../SpringBootImages/").resolve(uuid+".jpg");// local storage
 			//Path path = Paths.get("../../var/www/html/"+dbname+"/photos/").resolve(uuid+".jpg");//178
 			String profilesql=null;
-		    if(roleId.equals("1"))
+			if(roleId.equals("1"))
 		    {
-		    	profilesql="update Profile set Photo_Name=? where TenantId=? and CustomerUUId is null and PatientId is null and UserId is null";
+		    	
+		    	profilesql="update Profile set Photo_Name=? where RootId=? and TenantId is null and CompanyId is null and PatientId is null and PhysicianId is null";
 		    }
-		    else if(roleId.equals("3"))
+		    if(roleId.equals("2")||roleId.equals("3"))
 		    {
-		    	tenantId=getCustomerTenantId(uuid);
-		    	profilesql="update Profile set Photo_Name=? where TenantId='"+tenantId+"' and CustomerUUId=? and PatientId is null and UserId is null";
+		    	rootId=getTenantRootId(uuid);
+		    	profilesql="update Profile set Photo_Name=? where RootId='"+rootId+"' and TenantId=? and CompanyId is null and PatientId is null and PhysicianId is null";
+		    }
+		    else if(roleId.equals("4")||roleId.equals("5"))
+		    {
+		    	tenantId=getCompanyTenantId(uuid);
+		    	rootId=getTenantRootId(tenantId);
+		    	profilesql="update Profile set Photo_Name=? where RootId='"+rootId+"' and TenantId='"+tenantId+"' and CompanyId=? and PatientId is null and PhysicianId is null";
 		    	
 		    }
-		    else if(roleId.equals("5")||roleId.equals("6"))
+		    else if(roleId.equals("6")||roleId.equals("7"))
 		    {
 		    	tenantId=getPhysicianTenantId(uuid);
-		    	customerId=getPhysicianCustomerId(uuid);
-		    	profilesql="update Profile set Photo_Name=? where TenantId='"+tenantId+"' and CustomerUUId='"+customerId+"' and PatientId is null and UserId=?";
+		    	rootId=getTenantRootId(tenantId);
+		    	companyId=getPhysicianCompanyId(uuid);
+		    	profilesql="update Profile set Photo_Name=? where RootId='"+rootId+"' and TenantId='"+tenantId+"' and CompanyId='"+companyId+"' and PatientId is null and PhysicianId=?";
 		    	
 		    }
 		    else if(roleId.equals("8"))
 		    {
 		    	tenantId=getPatientTenantId(uuid);
-		    	customerId=getPatientCustomerId(uuid);
+		    	rootId=getTenantRootId(tenantId);
+		    	companyId=getPatientCompanyId(uuid);
 		    	physicianId=getPatientPhysicianId(uuid);
-		    	profilesql="update Profile set Photo_Name=? where TenantId='"+tenantId+"' and CustomerUUId='"+customerId+"' and PatientId=? and UserId='"+physicianId+"'";
+		    	profilesql="update Profile set Photo_Name=? where RootId='"+rootId+"' and TenantId='"+tenantId+"' and CompanyId='"+companyId+"' and PatientId=? and PhysicianId='"+physicianId+"'";
 		    }
 			
 			int count=jdbcTemplate.update(profilesql,uuid+".jpg",uuid);
@@ -103,34 +113,45 @@ public class UploadFileService {
 		String imagepath="/home/iorbitdeveloper/Documents/SpringBootImages/";
 		
 		String tenantId=null;
-		String customerId=null;
+		String companyId=null;
 		String physicianId=null;
 		String patientId=null;
+		String rootId=null;
 		String profilesql=null;
-		  if(roleId.equals("1"))
-		    {
-		    	profilesql="select Photo_Name from Profile where TenantId=? and CustomerUUId is null and PatientId is null and UserId is null";
-		    }
-		    else if(roleId.equals("3"))
-		    {
-		    	tenantId=getCustomerTenantId(uuid);
-		    	profilesql="select Photo_Name from Profile where TenantId='"+tenantId+"' and CustomerUUId=? and PatientId is null and UserId is null";
-		    	
-		    }
-		    else if(roleId.equals("5")||roleId.equals("6"))
-		    {
-		    	tenantId=getPhysicianTenantId(uuid);
-		    	customerId=getPhysicianCustomerId(uuid);
-		    	profilesql="select Photo_Name from Profile where TenantId='"+tenantId+"' and CustomerUUId='"+customerId+"' and PatientId is null and UserId=?";
-		    	
-		    }
-		    else if(roleId.equals("8"))
-		    {
-		    	tenantId=getPatientTenantId(uuid);
-		    	customerId=getPatientCustomerId(uuid);
-		    	physicianId=getPatientPhysicianId(uuid);
-		    	profilesql="select Photo_Name from Profile where TenantId='"+tenantId+"' and CustomerUUId='"+customerId+"' and PatientId=? and UserId='"+physicianId+"'";
-		    }
+		if(roleId.equals("1"))
+	    {
+	    	
+	    	profilesql="update Profile set Photo_Name=? where RootId=? and TenantId is null and CompanyId is null and PatientId is null and PhysicianId is null";
+	    }
+	    if(roleId.equals("2")||roleId.equals("3"))
+	    {
+	    	rootId=getTenantRootId(uuid);
+	    	profilesql="update Profile set Photo_Name=? where RootId='"+rootId+"' and TenantId=? and CompanyId is null and PatientId is null and PhysicianId is null";
+	    }
+	    else if(roleId.equals("4")||roleId.equals("5"))
+	    {
+	    	tenantId=getCompanyTenantId(uuid);
+	    	rootId=getTenantRootId(tenantId);
+	    	profilesql="update Profile set Photo_Name=? where RootId='"+rootId+"' and TenantId='"+tenantId+"' and CompanyId=? and PatientId is null and PhysicianId is null";
+	    	
+	    }
+	    else if(roleId.equals("6")||roleId.equals("7"))
+	    {
+	    	tenantId=getPhysicianTenantId(uuid);
+	    	rootId=getTenantRootId(tenantId);
+	    	companyId=getPhysicianCompanyId(uuid);
+	    	profilesql="update Profile set Photo_Name=? where RootId='"+rootId+"' and TenantId='"+tenantId+"' and CompanyId='"+companyId+"' and PatientId is null and PhysicianId=?";
+	    	
+	    }
+	    else if(roleId.equals("8"))
+	    {
+	    	tenantId=getPatientTenantId(uuid);
+	    	rootId=getTenantRootId(tenantId);
+	    	companyId=getPatientCompanyId(uuid);
+	    	physicianId=getPatientPhysicianId(uuid);
+	    	profilesql="update Profile set Photo_Name=? where RootId='"+rootId+"' and TenantId='"+tenantId+"' and CompanyId='"+companyId+"' and PatientId=? and PhysicianId='"+physicianId+"'";
+	    }
+		
 		
 		List<Map<String, Object>> rows = jdbcTemplate.queryForList(profilesql,uuid);
 		for (Map<String, Object> row : rows) 
@@ -158,10 +179,10 @@ public class UploadFileService {
 		return upload;
 	}
 	
-	public String getCustomerTenantId(String id)
+	public String getCompanyTenantId(String id)
 	{
 		
-		String sql = "SELECT TenantId FROM Profile WHERE CustomerUUId=? limit 1 ";
+		String sql = "SELECT TenantId FROM Profile WHERE CompanyId=? limit 1 ";
 
 	    String uid = (String) jdbcTemplate.queryForObject(
 	            sql, new Object[] { id }, String.class);
@@ -173,7 +194,7 @@ public class UploadFileService {
 	public String getPhysicianTenantId(String id)
 	{
 		
-		String sql = "SELECT TenantId FROM Profile WHERE UserId=? limit 1";
+		String sql = "SELECT TenantId FROM Profile WHERE PhysicianId=? limit 1";
 
 	    String uid = (String) jdbcTemplate.queryForObject(
 	            sql, new Object[] { id }, String.class);
@@ -193,20 +214,20 @@ public class UploadFileService {
 	    return uid;
 		
 	}
-	public String getPhysicianCustomerId(String id)
+	public String getPhysicianCompanyId(String id)
 	{
 		
-		String sql = "SELECT CustomerUUId FROM Profile WHERE UserId=? limit 1";
+		String sql = "SELECT CompanyId FROM Profile WHERE PhysicianId=? limit 1";
 
 	    String uid = (String) jdbcTemplate.queryForObject(
 	            sql, new Object[] { id }, String.class);
 
 	    return uid;
 	}
-	public String getPatientCustomerId(String id)
+	public String getPatientCompanyId(String id)
 	{
 		
-		String sql = "SELECT CustomerUUId FROM Profile WHERE PatientId=? limit 1";
+		String sql = "SELECT CompanyId FROM Profile WHERE PatientId=? limit 1";
 
 	    String uid = (String) jdbcTemplate.queryForObject(
 	            sql, new Object[] { id }, String.class);
@@ -217,7 +238,7 @@ public class UploadFileService {
 	public String getPatientPhysicianId(String id)
 	{
 		
-		String sql = "SELECT UserId FROM Profile WHERE PatientId=? limit 1";
+		String sql = "SELECT PhysicianId FROM Profile WHERE PatientId=? limit 1";
 
 	    String uid = (String) jdbcTemplate.queryForObject(
 	            sql, new Object[] { id }, String.class);
@@ -225,4 +246,15 @@ public class UploadFileService {
 	    return uid;
 	}
 	
+	public String getTenantRootId(String id)
+	{
+		
+		String sql = "SELECT RootId FROM Tenant WHERE TenantId=? ";
+
+	    String uid = (String) jdbcTemplate.queryForObject(
+	            sql, new Object[] { id }, String.class);
+
+	    return uid;
+		
+	}
 }

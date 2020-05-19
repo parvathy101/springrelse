@@ -6,8 +6,9 @@ import com.iThingsFoundation.IThingsFramework.common.Message;
 public class Device {
 	
 	private Object deviceuuid;
+	private Object rootId;
 	private Object tenantId;
-	private Object customerId;
+	private Object companyId;
 	private Object physicianId;
 	private Object patientId;
 	private String deviceId;
@@ -27,13 +28,13 @@ public class Device {
 
 
 
-	public Device(Object deviceuuid, Object tenantId, Object customerId, Object physicianId, Object patientId,
+	public Device(Object deviceuuid, Object tenantId, Object companyId, Object physicianId, Object patientId,
 			String deviceId, String deviceNumber, String firmwareVersion, String modelNo, Message message,
 			String batchsize, String offset, DeviceFilters filter) {
 		super();
 		this.deviceuuid = deviceuuid;
 		this.tenantId = tenantId;
-		this.customerId = customerId;
+		this.companyId = companyId;
 		this.physicianId = physicianId;
 		this.patientId = patientId;
 		this.deviceId = deviceId;
@@ -76,14 +77,14 @@ public class Device {
 
 
 
-	public Object getCustomerId() {
-		return customerId;
+	public Object getCompanyId() {
+		return companyId;
 	}
 
 
 
-	public void setCustomerId(Object customerId) {
-		this.customerId = customerId;
+	public void setCompanyId(Object companyId) {
+		this.companyId = companyId;
 	}
 
 

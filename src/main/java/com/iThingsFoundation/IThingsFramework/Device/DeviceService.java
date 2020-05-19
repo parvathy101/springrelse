@@ -37,19 +37,20 @@ public class DeviceService {
 		String lastRowno=null;
 		int id=0;
 		String tenantId=null;
-		String customerId=null;
+		String companyId=null;
 		String physicianId=null;
 		String patientId=null;
 		String lastpart=null;
+		String rootId=null;
         String exist=null;
         
         if(dev.getTenantId()!=null)
 		{
         	exist=getTenantExist(dev.getTenantId().toString());
 		}
-	else if(dev.getCustomerId()!=null)
+	else if(dev.getCompanyId()!=null)
 	{
-		exist=getCustomerExist(dev.getCustomerId().toString());
+		exist=getCompanyExist(dev.getCompanyId().toString());
 	}
 	else if(dev.getPhysicianId()!=null)		
 	{
@@ -68,27 +69,27 @@ public class DeviceService {
 			tenantId=dev.getTenantId().toString();
 			lastpart="Status='active' and TenantId='"+tenantId+"' order by Id asc ) t limit "+offset+","+batchsize+"";
 		}
-	else if(dev.getCustomerId()!=null)
+	else if(dev.getCompanyId()!=null)
 	{
-		tenantId=getCustomerTenantId(dev.getCustomerId().toString());
-		customerId=dev.getCustomerId().toString();
-		lastpart="Status='active' and TenantId='"+tenantId+"' and CustomerId='"+customerId+"' order by Id asc ) t limit "+offset+","+batchsize+"";
+		tenantId=getCompanyTenantId(dev.getCompanyId().toString());
+		companyId=dev.getCompanyId().toString();
+		lastpart="Status='active' and TenantId='"+tenantId+"' and CompanyId='"+companyId+"' order by Id asc ) t limit "+offset+","+batchsize+"";
 	}
 	else if(dev.getPhysicianId()!=null)		
 	{
 		tenantId=getPhysicianTenantId(dev.getPhysicianId().toString());
-		customerId=getPhysicianCustomerId(dev.getPhysicianId().toString());
+		companyId=getPhysicianCompanyId(dev.getPhysicianId().toString());
 		physicianId=dev.getPhysicianId().toString();
-		lastpart="Status='active' and TenantId='"+tenantId+"' and CustomerId='"+customerId+"' and UserId='"+physicianId+"' order by Id asc ) t limit "+offset+","+batchsize+"";
+		lastpart="Status='active' and TenantId='"+tenantId+"' and CompanyId='"+companyId+"' and PhysicianId='"+physicianId+"' order by Id asc ) t limit "+offset+","+batchsize+"";
 		
 	}
 	else if(dev.getPatientId()!=null)		
 	{
 		tenantId=getPatientTenantId(dev.getPatientId().toString());
-		customerId=getPatientCustomerId(dev.getPatientId().toString());
+		companyId=getPatientCompanyId(dev.getPatientId().toString());
 		physicianId=getPatientPhysicianId(dev.getPatientId().toString());
 		patientId=dev.getPatientId().toString();
-		lastpart="Status='active' and TenantId='"+tenantId+"' and CustomerId='"+customerId+"' and UserId='"+physicianId+"' and PatientId='"+patientId+"' order by Id asc ) t limit "+offset+","+batchsize+"";
+		lastpart="Status='active' and TenantId='"+tenantId+"' and CompanyId='"+companyId+"' and PhysicianId='"+physicianId+"' and PatientId='"+patientId+"' order by Id asc ) t limit "+offset+","+batchsize+"";
 		
 		
 	}
@@ -103,11 +104,12 @@ public class DeviceService {
 		
 		 if(dev.getFilter()!=null)
 		 {
+		
 			 //String sql3;
-			      if(dev.getFilter().getDeviceId()!=null)
+			      if(dev.getFilter().getDeviceNumber()!=null)
 			      {
-			    	  sql+= "DeviceId like '"+dev.getFilter().getDeviceId()+"%' and "; 
-			    	  sql2+= "DeviceId like '"+dev.getFilter().getDeviceId()+"%' and ";
+			    	  sql+= "DeviceNumber like '"+dev.getFilter().getDeviceNumber()+"%' and "; 
+			    	  sql2+= "DeviceNumber like '"+dev.getFilter().getDeviceNumber()+"%' and ";
 			      }
 			      if(dev.getFilter().getFirmwareVersion()!=null)
 			      {
@@ -142,8 +144,8 @@ public class DeviceService {
 		 for (Map<String, Object> row : rows) 
 	        {
 			 Device device=new Device();
-			 device.setDeviceuuid(row.get("DeviceUUID"));
-			 device.setDeviceId((String)row.get("DeviceId"));
+			 device.setDeviceuuid(row.get("DeviceId"));
+			 device.setDeviceNumber((String)row.get("DeviceNumber"));
 			 device.setFirmwareVersion((String)row.get("FirmwareVersion"));
 			 device.setModelNo((String)row.get("ModelNo"));
 			 double val=(double)row.get("rownumber");
@@ -164,28 +166,28 @@ public class DeviceService {
 		    if(dev.getTenantId()!=null)
 			{
 				tenantId=dev.getTenantId().toString();
-				sqlnew = sql2+" Id>"+id+" and TenantId='"+tenantId+"'";
+				sqlnew = sql2+" Id>"+id+" and TenantId='"+tenantId+"' and Status='active'";
 			}
-		else if(dev.getCustomerId()!=null)
+		else if(dev.getCompanyId()!=null)
 		{
-			tenantId=getCustomerTenantId(dev.getCustomerId().toString());
-			customerId=dev.getCustomerId().toString();
-			sqlnew = sql2+" Id>"+id+" and TenantId='"+tenantId+"' and CustomerId='"+customerId+"'";
+			tenantId=getCompanyTenantId(dev.getCompanyId().toString());
+			companyId=dev.getCompanyId().toString();
+			sqlnew = sql2+" Id>"+id+" and TenantId='"+tenantId+"' and CompanyId='"+companyId+"' and Status='active'";
 		}
 		else if(dev.getPhysicianId()!=null)		
 		{
 			tenantId=getPhysicianTenantId(dev.getPhysicianId().toString());
-			customerId=getPhysicianCustomerId(dev.getPhysicianId().toString());
+			companyId=getPhysicianCompanyId(dev.getPhysicianId().toString());
 			physicianId=dev.getPhysicianId().toString();
-			sqlnew = sql2+" Id>"+id+" and TenantId='"+tenantId+"' and CustomerId='"+customerId+"' and UserId='"+physicianId+"'";
+			sqlnew = sql2+" Id>"+id+" and TenantId='"+tenantId+"' and CompanyId='"+companyId+"' and PhysicianId='"+physicianId+"' and Status='active'";
 		}
 		else if(dev.getPatientId()!=null)		
 		{
 			tenantId=getPatientTenantId(dev.getPatientId().toString());
-			customerId=getPatientCustomerId(dev.getPatientId().toString());
+			companyId=getPatientCompanyId(dev.getPatientId().toString());
 			physicianId=getPatientPhysicianId(dev.getPatientId().toString());
 			patientId=dev.getPatientId().toString();
-			sqlnew = sql2+" Id>"+id+" and TenantId='"+tenantId+"' and CustomerId='"+customerId+"' and UserId='"+physicianId+"' and PatientId='"+patientId+"'";
+			sqlnew = sql2+" Id>"+id+" and TenantId='"+tenantId+"' and CompanyId='"+companyId+"' and PhysicianId='"+physicianId+"' and PatientId='"+patientId+"'";
 
 			
 		}
@@ -212,42 +214,47 @@ public class DeviceService {
 		uuid= Generators.timeBasedGenerator().generate();
 		Device registerDevice=new Device();
 		Message msg=new Message();
+		String rootId=null;
 		String tenantId = null;
-		String customerId=null;
+		String companyId=null;
 		String physicianId=null;
 		String patientId=null;
 		
 		 if(device.getTenantId()!=null)
 			{
 				tenantId=device.getTenantId().toString();
+				rootId=getTenantRootId(tenantId);
 				
 			}
-		else if(device.getCustomerId()!=null)
+		else if(device.getCompanyId()!=null)
 		{
-			tenantId=getCustomerTenantId(device.getCustomerId().toString());
-			customerId=device.getCustomerId().toString();
+			tenantId=getCompanyTenantId(device.getCompanyId().toString());
+			rootId=getTenantRootId(tenantId);
+			companyId=device.getCompanyId().toString();
 		}
 		else if(device.getPhysicianId()!=null)		
 		{
 			tenantId=getPhysicianTenantId(device.getPhysicianId().toString());
-			customerId=getPhysicianCustomerId(device.getPhysicianId().toString());
+			companyId=getPhysicianCompanyId(device.getPhysicianId().toString());
 			physicianId=device.getPhysicianId().toString();
+			rootId=getTenantRootId(tenantId);
 			
 		}
 		else if(device.getPatientId()!=null)		
 		{
 			tenantId=getPatientTenantId(device.getPatientId().toString());
-			customerId=getPatientCustomerId(device.getPatientId().toString());
+			companyId=getPatientCompanyId(device.getPatientId().toString());
 			physicianId=getPatientPhysicianId(device.getPatientId().toString());
 			patientId=device.getPatientId().toString();
+			rootId=getTenantRootId(tenantId);
 			
 			
 		}
 		
 		
 		
-		String sql="select * from Device where DeviceId=?";
-		List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql,device.getDeviceId());
+		String sql="select * from Device where DeviceNumber=?";
+		List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql,device.getDeviceNumber());
 		if(rows.size()>0)
 		{
 		
@@ -260,8 +267,8 @@ public class DeviceService {
 			String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 			String generatedString = RandomStringUtils.random(10,characters);
 		
-			String devicesql="Insert into Device(DeviceId,DeviceUUID,Status,Created_On,FirmwareVersion,ModelNo,TenantId,CustomerId,UserId,PatientId) values (?,?,?,?,?,?,?,?,?,?)";
-			int insertdevice=jdbcTemplate.update(devicesql,device.getDeviceId(),uuid.toString(),"active",timestamp.getTime(),device.getFirmwareVersion(),device.getModelNo(),tenantId,customerId,physicianId,patientId);
+			String devicesql="Insert into Device(DeviceId,DeviceNumber,Status,Created_On,FirmwareVersion,ModelNo,RootId,TenantId,CompanyId,PhysicianId,PatientId) values (?,?,?,?,?,?,?,?,?,?,?)";
+			int insertdevice=jdbcTemplate.update(devicesql,uuid.toString(),device.getDeviceNumber(),"active",timestamp.getTime(),device.getFirmwareVersion(),device.getModelNo(),rootId,tenantId,companyId,physicianId,patientId);
 			
 			if(insertdevice>0)
 			{
@@ -283,7 +290,7 @@ public class DeviceService {
 	{
 		
 		Message msg=new Message();
-		String devicesql="Update Device set FirmwareVersion=?,ModelNo=?,Modified_On=? where DeviceUUID=?";
+		String devicesql="Update Device set FirmwareVersion=?,ModelNo=?,Modified_On=? where DeviceId=?";
 		int updatedevice=jdbcTemplate.update(devicesql,device.getFirmwareVersion(),device.getModelNo(),timestamp.getTime(),device.getDeviceuuid());
 		if(updatedevice>0)
 		{
@@ -298,7 +305,7 @@ public class DeviceService {
 	public Message deleteById(Device device)
 	{
 		Message msg=new Message();
-        String devicesql="Update Device set Status='inactive' where DeviceUUID=?";
+        String devicesql="Update Device set Status='inactive' where DeviceId=?";
 		int deletedevice=jdbcTemplate.update(devicesql,device.getDeviceuuid());
 		if(deletedevice>0)
 		{
@@ -310,10 +317,10 @@ public class DeviceService {
 		return msg;
 	}
 	
-	public String getCustomerTenantId(String id)
+	public String getCompanyTenantId(String id)
 	{
 		
-		String sql = "SELECT TenantId FROM Customer WHERE CustomerUUId=? ";
+		String sql = "SELECT TenantId FROM Company WHERE CompanyId=? ";
 
 	    String uid = (String) jdbcTemplate.queryForObject(
 	            sql, new Object[] { id }, String.class);
@@ -325,7 +332,7 @@ public class DeviceService {
 	public String getPhysicianTenantId(String id)
 	{
 		
-		String sql = "SELECT TenantId FROM User WHERE UserId=? ";
+		String sql = "SELECT TenantId FROM Physician WHERE PhysicianId=? ";
 
 	    String uid = (String) jdbcTemplate.queryForObject(
 	            sql, new Object[] { id }, String.class);
@@ -344,10 +351,10 @@ public class DeviceService {
 	    return uid;
 		
 	}
-	public String getPhysicianCustomerId(String id)
+	public String getPhysicianCompanyId(String id)
 	{
 		
-		String sql = "SELECT CustomerUUId FROM User WHERE UserId=? ";
+		String sql = "SELECT CompanyId FROM Physician WHERE PhysicianId=? ";
 
 	    String uid = (String) jdbcTemplate.queryForObject(
 	            sql, new Object[] { id }, String.class);
@@ -356,10 +363,10 @@ public class DeviceService {
 		
 	}
 	
-	public String getPatientCustomerId(String id)
+	public String getPatientCompanyId(String id)
 	{
 		
-		String sql = "SELECT CustomerUUId FROM Patient WHERE PatientId=? ";
+		String sql = "SELECT CompanyId FROM Patient WHERE PatientId=? ";
 
 	    String uid = (String) jdbcTemplate.queryForObject(
 	            sql, new Object[] { id }, String.class);
@@ -371,7 +378,7 @@ public class DeviceService {
 	public String getPatientPhysicianId(String id)
 	{
 		
-		String sql = "SELECT UserId FROM Patient WHERE PatientId=? ";
+		String sql = "SELECT PhysicianId FROM Patient WHERE PatientId=? ";
 
 	    String uid = (String) jdbcTemplate.queryForObject(
 	            sql, new Object[] { id }, String.class);
@@ -380,10 +387,10 @@ public class DeviceService {
 		
 	}
 	
-	public String getCustomerExist(String id)
+	public String getCompanyExist(String id)
 	{
 		
-		String sql = "SELECT * FROM Device WHERE CustomerId=? and Status='active' ";
+		String sql = "SELECT * FROM Device WHERE CompanyId=? and Status='active' ";
         String exist=null;
        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql,id);
 		
@@ -403,7 +410,7 @@ public class DeviceService {
 	public String getPhysicianExist(String id)
 	{
 		
-		String sql = "SELECT * FROM Device WHERE UserId=? and Status='active' ";
+		String sql = "SELECT * FROM Device WHERE PhysicianId=? and Status='active' ";
         String exist=null;
        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql,id);
 		
@@ -459,7 +466,36 @@ public class DeviceService {
 	    return exist;
 		
 	}
-	
+	public String getRootExist(String id)
+	{
+		
+		String sql = "SELECT * FROM Device WHERE RootId=? and Status='active' ";
+        String exist=null;
+       List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql,id);
+		
+		if(rows.size()>0)
+		{
+		exist="yes";
+		}
+		else
+		{
+			exist="no";
+        }
 
+	    return exist;
+		
+	}
+	
+	public String getTenantRootId(String id)
+	{
+		
+		String sql = "SELECT RootId FROM Tenant WHERE TenantId=? ";
+
+	    String uid = (String) jdbcTemplate.queryForObject(
+	            sql, new Object[] { id }, String.class);
+
+	    return uid;
+		
+	}
 
 }
